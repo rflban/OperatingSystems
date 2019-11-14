@@ -5,9 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char **create_helloes(int qty);
-void delete_helloes(char **array, int qty);
-
 int main(void)
 {
     int child_qty = 5;
@@ -73,43 +70,5 @@ int main(void)
     }
 
     return 0;
-}
-
-char **create_helloes(int qty)
-{
-    int npos = 18;
-    char sample[] = "Hello from child #n!";
-    char **array = (char **)malloc(qty * sizeof(char *));
-
-    if (!array)
-    {
-        return 0;
-    }
-
-    for (int idx = 0; idx < qty; idx++)
-    {
-        array[idx] = (char *)malloc(sizeof(sample));
-
-        if (!array[idx])
-        {
-            delete_helloes(array, idx);
-            return 0;
-        }
-
-        strncpy(array[idx], sample, sizeof(sample));
-        array[idx][npos] = '0' + idx + 1;
-    }
-
-    return array;
-}
-
-void delete_helloes(char **array, int qty)
-{
-    for (int idx = 0; idx < qty; idx++)
-    {
-        free(array[idx]);
-    }
-
-    free(array);
 }
 
