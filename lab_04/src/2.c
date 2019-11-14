@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -14,7 +15,7 @@ int main(void)
         if (prev_pid != 0)
             if ((prev_pid = child_pids[i] = fork()) == -1)
             {
-                perror("can't fork");
+                perror("fork");
 
                 exit(1);
             }

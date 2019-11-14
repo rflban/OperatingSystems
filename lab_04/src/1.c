@@ -1,4 +1,5 @@
 #include <unistd.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -8,7 +9,7 @@ int main(void)
 
     if ((childpid = fork()) == -1)
     {
-        perror("can't fork");
+        perror("fork");
 
         exit(1);
     }

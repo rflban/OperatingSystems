@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -15,7 +14,7 @@ int main(void)
 
     if (pipe(descr) == -1)
     {
-        perror("can't pipe");
+        perror("pipe");
 
         exit(1);
     }
@@ -25,7 +24,7 @@ int main(void)
         if (prev_pid != 0)
             if ((prev_pid = child_pids[i] = fork()) == -1)
             {
-                perror("can't fork");
+                perror("fork");
 
                 exit(1);
             }
