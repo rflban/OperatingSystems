@@ -24,6 +24,13 @@ int main(void)
     {
         printf("child: pid = %d, ppid = %d, grid = %d\n",
                getpid(), getppid(), getgid());
+
+        if (execlp("/usr/bin/ls", "ls", "-lah", "--color=auto", 0) == -1)
+        {
+            perror("Can't exec");
+
+            exit(1);
+        }
     }
     else
     {
