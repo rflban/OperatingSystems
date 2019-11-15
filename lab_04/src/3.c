@@ -26,7 +26,8 @@ int main(void)
         printf("child: pid = %d, ppid = %d, grid = %d\n",
                getpid(), getppid(), getgid());
 
-        if (execlp("/usr/bin/ls", "ls", "-lah", "--color=auto", 0) == -1)
+        /*if (execlp("/usr/bin/ls", "ls", "-lah", "--color=auto", 0) == -1)*/
+        if (execlp("/usr/bin/display", "display", "../other/Klyopy.jpg", 0) == -1)
         {
             perror("exec");
 

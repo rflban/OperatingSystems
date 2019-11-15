@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 int main(void)
@@ -32,21 +33,30 @@ int main(void)
 
     if (prev_pid == 0)
     {
-        char message[40];
-        sprintf(message, "Hello from child %d!", getpid());
+        char message[64];
+        sprintf(message, "Hello from child %d to parent %d!",
+                getpid(), getppid());
 
         close(descr[0]);
-        write(descr[1], message, 40);
+        write(descr[1], message, strlen(message) + 1);
     }
     else
     {
-        char message[40];
+        printf("parent: pid = %d, ppid = %d, grid = %d\n",
+               getpid(), getppid(), getgid());
+
+        char message[64];
         close(descr[1]);
 
-        printf("parent: reads:\n");
-        for (int idx = 0; idx < child_qty; idx++)
+        printf("parent reads:\n");
+        for (int i = 0; i < child_qty; i++)
         {
-            read(descr[0], message, 40);
+            for
+            (
+                int j = 0;
+                read(descr[0], message + j, 1), message[j++] != '\0';
+            );
+
             printf("%s\n", message);
         }
 
