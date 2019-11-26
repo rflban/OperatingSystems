@@ -5,15 +5,21 @@
 
 int main(void)
 {
-    pid_t childpid;
+    int child_qty = 5;
+    pid_t prev_pid = 1;
+    pid_t child_pids[child_qty];
 
-    if ((childpid = fork()) == -1)
+    for (int i = 0; i < child_qty && prev_pid != 0; i++)
     {
-        perror("fork");
+        if ((prev_pid = child_pids[i] = fork()) == -1)
+        {
+            perror("fork");
 
-        exit(1);
+            exit(1);
+        }
     }
-    else if (childpid == 0)
+
+    if (prev_pid == 0)
     {
         sleep(1);
 

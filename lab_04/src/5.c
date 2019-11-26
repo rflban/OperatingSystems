@@ -1,12 +1,24 @@
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
+
+void handle_signal(int sig_num)
+{
+    printf("\n");
+    printf("Catched signal(%d)\n", sig_num);
+
+    exit(sig_num);
+}
 
 int main(void)
 {
+    signal(SIGINT, &handle_signal);
+
     int child_qty = 5;
     pid_t prev_pid = 1;
     pid_t child_pids[child_qty];
@@ -44,6 +56,13 @@ int main(void)
         printf("parent: pid = %d, ppid = %d, grid = %d\n",
                getpid(), getppid(), getgid());
 
+        printf("sleep for 3 seconds\n");
+        sleep(1);
+        printf("sleep for 2 seconds\n");
+        sleep(1);
+        printf("sleep for 1 seconds\n");
+        sleep(1);
+
         char message[64];
         close(descr[1]);
 
@@ -62,7 +81,7 @@ int main(void)
         int status;
         pid_t child_pid;
 
-        while ((child_pid = wait(&status)) != -1)
+        while ((child_pid = wait(&status)) != -1 && errno != ECHILD)
         {
             if (WIFEXITED(status))
             {
