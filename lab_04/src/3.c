@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+#include <errno.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -12,11 +14,10 @@ int main(void)
 {
     int child_qty = 5;
     pid_t prev_pid = 1;
-    pid_t child_pids[child_qty];
 
-    for (int i = 0; i < child_qty && prev_pid != 0; i++)
+    for (int i = 0; prev_pid != 0 && i < child_qty; i++)
     {
-        if ((prev_pid = child_pids[i] = fork()) == -1)
+        if ((prev_pid = fork()) == -1)
         {
             perror("fork");
 
@@ -31,7 +32,6 @@ int main(void)
         printf("child: pid = %d, ppid = %d, grid = %d\n",
                getpid(), getppid(), getgid());
 
-        /*if (execlp("/usr/bin/ls", "/usr/bin/ls", "-lah", "--color=auto", 0) == -1)*/
         if (execlp("/usr/bin/display", "/usr/bin/display", pics[rand() % 5], 0) == -1)
         {
             perror("exec");
@@ -47,7 +47,7 @@ int main(void)
         int status;
         pid_t child_pid;
 
-        while ((child_pid = wait(&status)) != -1)
+        while ((child_pid = wait(&status)) != -1 && errno != ECHILD)
         {
             if (WIFEXITED(status))
             {
@@ -59,6 +59,13 @@ int main(void)
                 printf("parent: child %d terminated abnormally with %d rc\n",
                        child_pid, WEXITSTATUS(status));
             }
+        }
+
+        if (errno != ECHILD)
+        {
+            perror("wait");
+
+            exit(1);
         }
     }
 

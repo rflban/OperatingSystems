@@ -21,7 +21,6 @@ int main(void)
 
     int child_qty = 5;
     pid_t prev_pid = 1;
-    pid_t child_pids[child_qty];
 
     int descr[2];
 
@@ -32,9 +31,9 @@ int main(void)
         exit(1);
     }
 
-    for (int i = 0; i < child_qty && prev_pid != 0; i++)
+    for (int i = 0; prev_pid != 0 && i < child_qty; i++)
     {
-        if ((prev_pid = child_pids[i] = fork()) == -1)
+        if ((prev_pid = fork()) == -1)
         {
             perror("fork");
 
@@ -67,15 +66,20 @@ int main(void)
         close(descr[1]);
 
         printf("parent reads:\n");
-        for (int i = 0; i < child_qty; i++)
         {
-            for
-            (
-                int j = 0;
-                read(descr[0], message + j, 1), message[j++] != '\0';
-            );
+            int j;
 
-            printf("%s\n", message);
+            for (int i = 0; i < child_qty; i++)
+            {
+                j = 0;
+                do
+                {
+                    read(descr[0], message + j, 1);
+                }
+                while (message[j++] != '\0');
+
+                printf("%s\n", message);
+            }
         }
 
         int status;
@@ -93,6 +97,13 @@ int main(void)
                 printf("parent: child %d terminated abnormally with %d rc\n",
                        child_pid, WEXITSTATUS(status));
             }
+        }
+
+        if (errno != ECHILD)
+        {
+            perror("wait");
+
+            exit(1);
         }
     }
 

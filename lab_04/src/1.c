@@ -9,9 +9,9 @@ int main(void)
     pid_t prev_pid = 1;
     pid_t child_pids[child_qty];
 
-    for (int i = 0; i < child_qty && prev_pid != 0; i++)
+    for (int i = 0; prev_pid != 0 && i < child_qty; i++)
     {
-        if ((prev_pid = child_pids[i] = fork()) == -1)
+        if ((child_pids[i] = prev_pid = fork()) == -1)
         {
             perror("fork");
 
@@ -21,6 +21,9 @@ int main(void)
 
     if (prev_pid == 0)
     {
+        printf("child: pid = %d, ppid = %d, grid = %d\n",
+               getpid(), getppid(), getgid());
+
         sleep(1);
 
         printf("child: pid = %d, ppid = %d, grid = %d\n",
@@ -30,6 +33,12 @@ int main(void)
     {
         printf("parent: pid = %d, ppid = %d, grid = %d\n",
                getpid(), getppid(), getgid());
+
+        printf("parent: child pids:\n");
+        for (int i = 0; i < child_qty; i++)
+        {
+            printf("%d\n", child_pids[i]);
+        }
     }
 
     return 0;
