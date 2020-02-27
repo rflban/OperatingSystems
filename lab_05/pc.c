@@ -22,31 +22,43 @@
 enum { SB = 0, SE, SF };
 enum { P = -1, V = +1 };
 enum { N = 3 };
+enum { PQTY = 3, CQTY = 3 };
 
 void produce(int semid, int **buf_ptr);
 void consume(int semid, int **buf_ptr);
 
 void sig_handler(int sugnum);
 
-pid_t child_pids[N * 2];
+void free_shbuf(int shmid, void *buffer);
+void free_sem(int semid);
+
+pid_t child_pids[PQTY + CQTY];
+
+int shmid;
+int semid;
 
 int *shbuf_begin;
 int *shbuf_end;
 
-struct sembuf pstart[2] = { {SE, P, SEMFLAGS}, {SB, P, SEMFLAGS} };
-struct sembuf cstart[2] = { {SF, P, SEMFLAGS}, {SB, P, SEMFLAGS} };
+struct sembuf pstart[2] = {
+    { SE, P, SEMFLAGS }, { SB, P, SEMFLAGS }
+};
+struct sembuf cstart[2] = {
+    { SF, P, SEMFLAGS }, { SB, P, SEMFLAGS }
+};
 
-struct sembuf pstop[2] = { {SF, V, SEMFLAGS}, {SB, V, SEMFLAGS} };
-struct sembuf cstop[2] = { {SE, V, SEMFLAGS}, {SB, V, SEMFLAGS} };
+struct sembuf pstop[2] = {
+    { SF, V, SEMFLAGS }, { SB, V, SEMFLAGS }
+};
+struct sembuf cstop[2] = {
+    { SE, V, SEMFLAGS }, { SB, V, SEMFLAGS }
+};
 
 int main(void)
 {
     signal(SIGINT, &sig_handler);
 
-    int shmid;
-    int semid;
-
-    if ((shmid = shmget(IPC_PRIVATE, N * sizeof(int) + 2 * sizeof(int *), IPC_CREAT | FULLPERM)) == -1)
+    if ((shmid = shmget(IPC_PRIVATE, N * sizeof(int) + 2 * sizeof(int *), FULLPERM)) == -1)
     {
         perror("shmget");
 
@@ -65,11 +77,12 @@ int main(void)
     shbuf_end = shbuf_begin + N;
 
     int **pptr = (int **)shbuf_end;
-    int **cptr = pptr + 1;
-    *pptr = shbuf_begin;
-    *cptr = shbuf_begin;
+    *pptr = shbuf_end - 1;
 
-    if ((semid = semget(IPC_PRIVATE, 3, IPC_CREAT | FULLPERM)) == -1)
+    int **cptr = pptr + 1;
+    *cptr = shbuf_end - 1;
+
+    if ((semid = semget(IPC_PRIVATE, 3, FULLPERM)) == -1)
     {
         perror("semget");
 
@@ -103,7 +116,7 @@ int main(void)
         {
             srand(time(NULL) ^ getpid());
 
-            if (idx < 3)
+            if (idx < PQTY)
             {
                 while (1)
                 {
@@ -125,7 +138,7 @@ int main(void)
             printf("parent: child's #%d pid = %d - ",
                    idx + 1, child_pids[idx]);
 
-            if (idx < 3)
+            if (idx < PQTY)
             {
                 printf("producer\n");
             }
@@ -160,7 +173,37 @@ int main(void)
         exit(1);
     }
 
+    free_shbuf(shmid, shbuf_begin);
+    free_sem(semid);
+
     return 0;
+}
+
+void free_shbuf(int shmid, void *buffer)
+{
+    if (shmctl(shmid, IPC_RMID, 0) == -1)
+    {
+        perror("shmctl IPC_RMID");
+
+        exit(1);
+    }
+
+    if (shmdt(buffer) == -1)
+    {
+        perror("shmdt");
+
+        exit(1);
+    }
+}
+
+void free_sem(int semid)
+{
+    if (semctl(semid, IPC_RMID, 0) == -1)
+    {
+        perror("shmctl IPC_RMID");
+
+        exit(1);
+    }
 }
 
 void sig_handler(int signum)
@@ -170,6 +213,8 @@ void sig_handler(int signum)
         kill(child_pids[i], signum);
         kill(child_pids[i + N], signum);
     }
+
+    free_shbuf(shmid, shbuf_begin);
 
     exit(signum);
 }
@@ -183,14 +228,16 @@ void produce(int semid, int **buf_ptr)
         exit(1);
     }
 
-    **buf_ptr = *buf_ptr - shbuf_begin + 1;
-    printf("producer: pid = %d, write %d\n", getpid(), **buf_ptr);
+    int val = **buf_ptr;
     *buf_ptr += 1;
 
     if (*buf_ptr >= shbuf_end)
     {
         *buf_ptr = shbuf_begin;
     }
+
+    **buf_ptr = val + 1;
+    printf("producer: pid = %d, write %d\n", getpid(), **buf_ptr);
 
     if (semop(semid, pstop, 2) == -1)
     {
@@ -209,13 +256,14 @@ void consume(int semid, int **buf_ptr)
         exit(1);
     }
 
-    printf("consumer: pid = %d, read %d\n", getpid(), **buf_ptr);
     *buf_ptr += 1;
 
     if (*buf_ptr >= shbuf_end)
     {
         *buf_ptr = shbuf_begin;
     }
+
+    printf("consumer: pid = %d, read %d\n", getpid(), **buf_ptr);
 
     if (semop(semid, cstop, 2) == -1)
     {
