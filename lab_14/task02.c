@@ -26,6 +26,8 @@ static ssize_t fortune_write(struct file *fd, const char __user *buf,
 
 static int fortune_init(void)
 {
+    int rc;
+
     static struct file_operations fops = {
         .owner = THIS_MODULE,
         .read = &fortune_read,
@@ -49,19 +51,21 @@ static int fortune_init(void)
 
     printk(KERN_INFO "fortune: module have loaded.\n");
 
+    rc = 0;
+
     if (!(p_dir = proc_mkdir("fortune_dir", NULL)))
     {
         printk(KERN_ERR "fortune: can't create fortune directory!\n");
-        return -ENOMEM;
+        rc = -ENOMEM;
     }
-    if (!(p_link = proc_symlink("fortune_dir/fortune_link",
-                                NULL, "../fortune")))
+    if (!(p_link = proc_symlink("fortune_link",
+                                NULL, "fortune")))
     {
         printk(KERN_ERR "fortune: can't create fortune symlink!\n");
-        return -ENOMEM;
+        rc = -ENOMEM;
     }
 
-    return 0;
+    return rc;
 }
 
 static void fortune_exit(void)

@@ -8,14 +8,13 @@
 
 #define SERVER_SOCKET_NAME "socket.soc"
 
-static inline int get_input(char **buf, size_t *len);
+static inline int get_input(char *buf, size_t len);
 
 int main(void)
 {
     int socket_fd;
     char buf[BUFSIZ];
-    char *input;
-    size_t input_len;
+    char input[BUFSIZ];
     struct sockaddr server_name;
 
     if ((socket_fd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
@@ -27,13 +26,9 @@ int main(void)
     server_name.sa_family = AF_UNIX;
     strcpy(server_name.sa_data, SERVER_SOCKET_NAME);
 
-    input = NULL;
-    input_len = 0;
-
-    while (get_input(&input, &input_len))
+    while (get_input(input, sizeof(input)))
     {
-        input[input_len - 1] = 0;
-        snprintf(buf, sizeof(buf), "%d client: %s", getpid(), input);
+        snprintf(buf, sizeof(buf), "Client (pid %d): %s", getpid(), input);
         sendto(socket_fd, buf, strlen(buf), 0, &server_name,
                sizeof(server_name.sa_family) +
                strlen(server_name.sa_data) + 1);
@@ -45,15 +40,13 @@ int main(void)
         exit(1);
     }
 
-    free(input);
-
     return 0;
 }
 
-static inline int get_input(char **buf, size_t *len)
+static inline int get_input(char *buf, size_t len)
 {
     printf("> ");
-    getline(buf, len, stdin);
+    fgets(buf, len, stdin);
 
     return !feof(stdin);
 }

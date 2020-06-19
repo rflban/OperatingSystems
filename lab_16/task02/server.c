@@ -134,7 +134,7 @@ static int _connect(int *client_fds, int *client_pids, fd_set *fdset)
     idx = read(accepted_fd, buf, sizeof(buf) - 1);
     *client_pids = atoi(buf);
 
-    printf("%d just connected\n", *client_pids);
+    printf("Client (pid %d) just connected\n", *client_pids);
 
     return 0;
 }
@@ -155,14 +155,14 @@ static int _serve_clients(int *client_fds, int *client_pids,
                 write(client_fds[i], FEEDBACK_MSG, strlen(FEEDBACK_MSG));
 
                 buf[read_cnt] = '\0';
-                printf("%d: %s", client_pids[i], buf);
+                printf("Client (pid %d): %s", client_pids[i], buf);
             }
             else
             {
                 FD_CLR(client_fds[i], fdset);
                 close(client_fds[i]);
                 client_fds[i] = -1;
-                printf("%d just disconnected\n", client_pids[i]);
+                printf("Client (pid %d) just disconnected\n", client_pids[i]);
             }
         }
 

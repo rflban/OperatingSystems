@@ -40,6 +40,8 @@ static ssize_t fortune_write(struct file *fd, const char __user *buf,
 
 static int fortune_init(void)
 {
+    int rc;
+
     static struct file_operations fops = {
         .owner = THIS_MODULE,
         .read = &fortune_read,
@@ -63,19 +65,21 @@ static int fortune_init(void)
 
     printk(KERN_INFO "fortune: module have loaded.\n");
 
+    rc = 0;
+
     if (!(p_dir = proc_mkdir("fortune_dir", NULL)))
     {
         printk(KERN_ERR "fortune: can't create fortune directory!\n");
-        return -ENOMEM;
+        rc = -ENOMEM;
     }
-    if (!(p_link = proc_symlink("fortune_dir/fortune_link",
-                                NULL, "../fortune")))
+    if (!(p_link = proc_symlink("fortune_link",
+                                NULL, "fortune")))
     {
         printk(KERN_ERR "fortune: can't create fortune symlink!\n");
-        return -ENOMEM;
+        rc = -ENOMEM;
     }
 
-    return 0;
+    return rc;
 }
 
 static void fortune_exit(void)
@@ -138,20 +142,21 @@ module_exit(fortune_exit);
 На рисунках~\ref{img:moduleload},~\ref{img:procfiles},~\ref{img:showcase} изображены сборка, загрузка модуля, проверка созданных файлов и возможности ввода-вывода при помощи команд echo, cat.
 
 \begin{figure}[H]
-    \includegraphics[scale=0.5]{images/moduleload.png}
+    \includegraphics[scale=0.4]{images/moduleload.png}
+    \includegraphics[scale=0.4]{images/lsmod.png}
     \caption{Сборка и загрузка модуля}\label{img:moduleload}
 \end{figure}
 
 \begin{figure}[H]
-    \includegraphics[scale=0.5]{images/procfiles.png}
+    \includegraphics[scale=0.4]{images/procfiles.png}
     \caption{Проверка созданных файлов}\label{img:procfiles}
 \end{figure}
 
 \begin{figure}[H]
-    \includegraphics[scale=0.5]{images/showcase.png}
+    \includegraphics[scale=0.4]{images/showcase.png}
     \caption{Проверка работы}\label{img:showcase}
 \end{figure}
 
 \section{Обоснование использования\\специальных функций}
-Использование copy\_to\_user, copy\_from\_user обусловлено тем, что в Linux память сегментирована. Это означает, что указатель не ссылается на уникальную позицию в памяти, а ссылается на позицию в сегменте. Процессу доступен только собственный сегмент памяти. Если выполняется обычная программа, то адресация выполняется автоматически. Если выполняется код ядра, и необходимо получить доступ к сегменту кода ядра, то всегда нужен буфер, но когда мы хотим передавать информацию между процессом и кодом ядра, то соответствующая функция ядра получит указатель на буфер процесса.
+Использование copy\_to\_user, copy\_from\_user обусловлено тем, что в Linux каждый процесс имеет собственное изолированное адресное пространство. То есть указатель ссылается не на уникальную позицию в  физической памяти, а на позицию в адресном пространстве процесса. При выполнении обычной программы адресация происходит автоматически. Если выполняется код ядра и необходимо получить доступ к странице кода ядра, то всегда нужен буфер, но когда мы хотим передавать информацию между процессом и кодом ядра, то соответсвующая функция ядра (copy\_to\_user, copy\_from\_user) получит указатель на буфер процесса.
 
