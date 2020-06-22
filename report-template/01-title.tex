@@ -5,7 +5,9 @@
         \footnotesize
         \bfseries
         \centering
+        %\begin{tabular}{|c|c|}
         \begin{tabular}{cc}
+            %\hline
             \multirow{7}{*}{\includegraphics[scale=0.15]{images/bmstu_logo.png}}
             & Министерство науки и высшего образования Российской Федерации \\
             & Федеральное государственное бюджетное образовательное учреждение \\
@@ -14,6 +16,7 @@
             & имени Н.Э. Баумана \\
             & (национальный исследовательский университет)>> \\
             & (МГТУ им. Н.Э. Баумана) \\
+            %\hline
         \end{tabular}
     \end{table}
 
@@ -41,23 +44,29 @@
 
     \begin{flushleft}
         \large
-        \begin{minipage}[t]{0.8\linewidth}
-            \textbf{Дисциплина }\uline{\hfill Операционные системы \hfill} \par
-            \vspace{0.25cm}
-            \textbf{Тема }\uline{\hfill \hfill} \par
-        \end{minipage}
 
-        \vspace{1cm}
-
-        \begin{minipage}[t]{0.6\linewidth}
-            \textbf{Студент }\uline{\hfill Набиев Ф.М. \hfill} \par
-            \vspace{0.25cm}
-            \textbf{Группа }\uline{\hfill ИУ7--63Б \hfill} \par
-            \vspace{0.25cm}
-            \textbf{Оценка (баллы) }\uline{\hfill \hfill} \par
-            \vspace{0.25cm}
-            \textbf{Преподаватель }\uline{\hfill Рязанова Н.Ю. \hfill} \par
-        \end{minipage}
+        \renewcommand{\arraystretch}{1.25}
+        %\begin{tabular}{l@{\hspace{1cm}}l}
+        \begin{tabular}{l@{\hspace{1cm}}ll}
+        %\begin{tabular}{lll}
+            \multicolumn{2}{l@{\hspace{1cm}}}{\textbf{Дисциплина}} & \uline{\quad{}Операционные системы\quad\hfill} \\
+        \textbf{Тема} &
+        \multicolumn{2}{l}{\uline{\quad{}\quad\hfill}}
+                    \\&
+        \multicolumn{2}{l}{\uline{\quad{}\quad\hfill}}
+        \\
+    \end{tabular}
+    \end{flushleft}
+    \par
+    \begin{flushleft}
+        \large
+        \begin{tabular}{l@{\hspace{1cm}}l}
+            \textbf{Студент} & \uline{\quad{}Набиев~Ф.М.\quad\hfill} \\
+            \textbf{Группа} & \uline{\quad{}ИУ7--63Б\quad\hfill} \\
+            \textbf{Оценка (баллы)} & \uline{\quad{}\hfill} \\
+            \textbf{Преподаватель} & \uline{\quad{}Рязанова~Н.Ю.\quad\hfill} \\
+        \end{tabular}
+        \renewcommand{\arraystretch}{1}
 
     \end{flushleft}
 
